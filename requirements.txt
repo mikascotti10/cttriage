@@ -1,0 +1,16 @@
+torch
+torchvision
+timm
+pydicom
+opencv-python
+scikit-image
+pandas
+numpy
+scikit-learn
+albumentations
+matplotlib
+seaborn
+imagededup
+statsmodels
+torchcam
+EOF
