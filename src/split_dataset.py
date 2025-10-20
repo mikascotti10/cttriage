@@ -17,6 +17,17 @@ DATASET = BASE_DIR / "samples.parquet"
 df = pd.read_parquet(DATASET)
 print("Total de imágenes:", len(df))
 
+# 🔹 Mantener solo las clases etiquetadas
+valid_labels = ["Normal", "Ischemia", "Bleeding"]
+df = df[df["label"].isin(valid_labels)]
+
+# 🔹 (opcional) eliminar nulos si existieran
+df = df[df["label"].notnull()]
+
+print("Imágenes con etiqueta válida:", len(df))
+print("Clases encontradas:", df["label"].value_counts())
+
+
 # Identificador de grupo (por estudio o por carpeta padre)
 # Si tenés una columna con el ID de estudio, usala aquí:
 if "study" in df.columns:
