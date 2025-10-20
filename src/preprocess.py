@@ -34,16 +34,19 @@ def window(img_hu, wl, ww):
 # 3. Pipeline DICOM → multi-canal
 # ---------------------------
 def dicom_to_channels(path, windows=((40, 80), (50, 130)), out_size=224):
-    """
-    Lee un DICOM, convierte a HU y genera canales por ventana.
-    Ejemplo: canal1=brain, canal2=subdural.
-    """
+    import numpy as np, cv2, pydicom
     ds = pydicom.dcmread(path)
     hu = to_hu(ds)
     chans = [window(hu, wl, ww) for wl, ww in windows]
     chans = [cv2.resize(c, (out_size, out_size), interpolation=cv2.INTER_AREA)
              for c in chans]
-    return np.stack(chans, axis=0)  # (C,H,W)
+
+    x = np.stack(chans, axis=0)  # (2,H,W)
+    # Si hay solo 2 canales, agregamos un tercero (por ejemplo repitiendo el primero)
+    if x.shape[0] == 2:
+        x = np.concatenate([x, x[:1]], axis=0)
+    return x
+
 
 
 # ---------------------------
