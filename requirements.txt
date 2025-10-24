@@ -13,7 +13,6 @@ seaborn
 imagededup
 statsmodels
 torchcam
-EOF
 torchaudio
 pylibjpeg 
 pylibjpeg-libjpeg 
