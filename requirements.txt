@@ -14,3 +14,7 @@ imagededup
 statsmodels
 torchcam
 EOF
+torchaudio
+pylibjpeg 
+pylibjpeg-libjpeg 
+pylibjpeg-openjpeg
