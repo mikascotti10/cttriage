@@ -17,26 +17,31 @@ DATASET = BASE_DIR / "samples.parquet"
 df = pd.read_parquet(DATASET)
 print("Total de imágenes:", len(df))
 
-# 🔹 Mantener solo las clases etiquetadas
+# 🔹 Normalizar etiquetas
+if "label" in df.columns:
+    df["label"] = df["label"].astype(str).str.strip().str.capitalize()
+
+# 🔹 Filtrar etiquetas válidas
 valid_labels = ["Normal", "Ischemia", "Bleeding"]
 df = df[df["label"].isin(valid_labels)]
-
-# 🔹 (opcional) eliminar nulos si existieran
 df = df[df["label"].notnull()]
 
-print("Imágenes con etiqueta válida:", len(df))
-print("Clases encontradas:", df["label"].value_counts())
+# 🔹 Filtrar subset (solo train)
+if "subset" in df.columns:
+    df["subset"] = df["subset"].astype(str).str.lower().str.strip()
+    df = df[df["subset"] == "train"]
 
+print("Imágenes con etiqueta válida (subset=train):", len(df))
+print("Clases encontradas:\n", df["label"].value_counts())
 
-# Identificador de grupo (por estudio o por carpeta padre)
-# Si tenés una columna con el ID de estudio, usala aquí:
-if "study" in df.columns:
-    groups = df["study"]
+# 🔹 Determinar grupos (evita NoneType)
+if "study_id" in df.columns and df["study_id"].notnull().any():
+    groups = df["study_id"]
 else:
-    # si no existe, inferimos el grupo a partir del directorio del archivo
+    # fallback: usar carpeta padre del path
     groups = df["image_path"].apply(lambda x: Path(x).parent.name)
 
-# Definir el divisor: 80% train, 20% val
+# 🔹 Split 80/20 por grupos
 splitter = GroupShuffleSplit(test_size=0.2, n_splits=1, random_state=42)
 train_idx, val_idx = next(splitter.split(df, groups=groups))
 
@@ -46,7 +51,9 @@ val_df = df.iloc[val_idx].copy()
 print(f"Train: {len(train_df)} imágenes ({len(train_df)/len(df):.1%})")
 print(f"Val:   {len(val_df)} imágenes ({len(val_df)/len(df):.1%})")
 
-# Guardar splits
-train_df.to_parquet(BASE_DIR / "train_split.parquet", index=False)
-val_df.to_parquet(BASE_DIR / "val_split.parquet", index=False)
+# 🔹 Guardar splits
+train_path = BASE_DIR / "train_split.parquet"
+val_path = BASE_DIR / "val_split.parquet"
+train_df.to_parquet(train_path, index=False)
+val_df.to_parquet(val_path, index=False)
 print("✅ Guardados train_split.parquet y val_split.parquet")
